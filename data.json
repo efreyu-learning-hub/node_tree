@@ -1,0 +1,721 @@
+{
+  "name": "Ref",
+  "description": "Base class for reference counting memory management. All objects that need automatic memory management should inherit from this class.",
+  "header": "base/CCRef.h",
+  "methods": ["retain()", "release()", "autorelease()", "getReferenceCount()"],
+  "properties": ["_referenceCount: unsigned int"],
+  "children": [
+    {
+      "name": "Node",
+      "description": "The base element of the scene graph. A Node can contain other nodes (addChild). All visual elements in a scene inherit from Node. It provides: position, scale, rotation, anchor point, visibility, z-order, actions, scheduling, event handling.",
+      "header": "2d/CCNode.h",
+      "methods": [
+        "addChild(Node*, int zOrder, int tag)",
+        "removeChild(Node*)",
+        "removeAllChildren()",
+        "getChildByTag(int)",
+        "getChildByName(string)",
+        "setPosition(Vec2)",
+        "setScale(float)",
+        "setRotation(float)",
+        "setAnchorPoint(Vec2)",
+        "setVisible(bool)",
+        "setLocalZOrder(int)",
+        "setGlobalZOrder(float)",
+        "runAction(Action*)",
+        "stopAllActions()",
+        "schedule(callback, interval)",
+        "unscheduleAllCallbacks()",
+        "convertToWorldSpace(Vec2)",
+        "convertToNodeSpace(Vec2)",
+        "setContentSize(Size)",
+        "getBoundingBox()"
+      ],
+      "properties": [
+        "_position: Vec2",
+        "_rotationX / _rotationY: float",
+        "_scaleX / _scaleY: float",
+        "_anchorPoint: Vec2",
+        "_contentSize: Size",
+        "_visible: bool",
+        "_localZOrder: int",
+        "_globalZOrder: float",
+        "_children: Vector<Node*>",
+        "_parent: Node*",
+        "_tag: int",
+        "_name: string",
+        "_running: bool"
+      ],
+      "children": [
+        {
+          "name": "Scene",
+          "description": "A Scene is a container that holds all the nodes of a screen. There is always one active scene at a time. A Scene has no parent and is the root of the node tree managed by Director.",
+          "header": "2d/CCScene.h",
+          "methods": [
+            "createWithPhysics()",
+            "getPhysicsWorld()",
+            "initWithSize(Size)",
+            "render(Renderer*, Mat4&, Mat4*)"
+          ],
+          "properties": ["_physicsWorld: PhysicsWorld*"],
+          "children": [
+            {
+              "name": "TransitionScene",
+              "description": "Base class for scene transitions (fade, slide, flip, etc.). A TransitionScene animates outgoing and incoming scenes.",
+              "header": "2d/CCTransition.h",
+              "methods": ["create(float duration, Scene* scene)", "finish()", "hideOutShowIn()"],
+              "properties": ["_inScene: Scene*", "_outScene: Scene*", "_duration: float", "_isInSceneOnTop: bool"],
+              "children": [
+                { "name": "TransitionFade", "description": "Fade out the outgoing scene and then fade in the incoming scene.", "header": "2d/CCTransition.h", "methods": ["create(float, Scene*, Color3B)"], "properties": ["_color: Color3B"] },
+                { "name": "TransitionSlideInL", "description": "Slide in the incoming scene from the left border.", "header": "2d/CCTransition.h", "methods": ["action()", "easeActionWithAction(ActionInterval*)"], "properties": [] },
+                { "name": "TransitionFlipX", "description": "Flips the screen horizontally (like a card flip) to show the incoming scene.", "header": "2d/CCTransition.h", "methods": ["create(float, Scene*, Orientation)"], "properties": [] }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Sprite",
+          "description": "A Sprite is a 2D image (Texture2D or a rectangle within a SpriteFrame/atlas). Sprites can be created from files, texture regions, or sprite frames. They are the primary visual building blocks of a 2D game.",
+          "header": "2d/CCSprite.h",
+          "methods": [
+            "create(string filename)",
+            "createWithSpriteFrame(SpriteFrame*)",
+            "createWithTexture(Texture2D*)",
+            "setTexture(Texture2D*)",
+            "setTextureRect(Rect)",
+            "setSpriteFrame(SpriteFrame*)",
+            "setFlippedX(bool)",
+            "setFlippedY(bool)",
+            "setColor(Color3B)",
+            "setOpacity(GLubyte)",
+            "setBlendFunc(BlendFunc)"
+          ],
+          "properties": [
+            "_texture: Texture2D*",
+            "_spriteFrame: SpriteFrame*",
+            "_rect: Rect",
+            "_flippedX / _flippedY: bool",
+            "_blendFunc: BlendFunc",
+            "_insideBounds: bool"
+          ],
+          "children": [
+            {
+              "name": "Sprite3D",
+              "description": "Renders a 3D model (e.g. .c3b / .c3t files). Supports mesh, materials, skeleton animation.",
+              "header": "3d/CCSprite3D.h",
+              "methods": ["create(string modelPath)", "setMaterial(Material*)", "getMesh()", "setSkeleton(Skeleton3D*)"],
+              "properties": ["_meshes: Vector<Mesh*>", "_skeleton: Skeleton3D*"]
+            }
+          ]
+        },
+        {
+          "name": "Label",
+          "description": "Unified text rendering node. Supports TTF fonts, bitmap fonts (BMFont), system fonts, and char maps. Provides text effects like outline, shadow, glow.",
+          "header": "2d/CCLabel.h",
+          "methods": [
+            "createWithTTF(string text, string fontFile, float fontSize)",
+            "createWithBMFont(string bmfontFile, string text)",
+            "createWithSystemFont(string text, string font, float fontSize)",
+            "setString(string)",
+            "getString()",
+            "setTextColor(Color4B)",
+            "enableOutline(Color4B, int size)",
+            "enableShadow(Color4B, Size offset, int blur)",
+            "enableGlow(Color4B)",
+            "setAlignment(TextHAlignment, TextVAlignment)",
+            "setMaxLineWidth(float)",
+            "setOverflow(Overflow)"
+          ],
+          "properties": [
+            "_currentUTF16String: u16string",
+            "_fontAtlas: FontAtlas*",
+            "_textColor: Color4B",
+            "_effectColor: Color4F",
+            "_labelType: LabelType",
+            "_overflow: Overflow"
+          ],
+          "children": []
+        },
+        {
+          "name": "Layer",
+          "description": "A Layer is a Node subclass that implements touch events and accelerometer handling. In modern cocos2d-x (v3+), Layer is mostly deprecated in favor of using Node + EventListeners directly.",
+          "header": "2d/CCLayer.h",
+          "methods": [
+            "create()",
+            "onTouchBegan(Touch*, Event*)",
+            "onTouchMoved(Touch*, Event*)",
+            "onTouchEnded(Touch*, Event*)"
+          ],
+          "properties": ["_touchEnabled: bool", "_accelerometerEnabled: bool"],
+          "children": [
+            {
+              "name": "LayerColor",
+              "description": "A Layer that has a solid background color. Useful for dimming overlays, colored backgrounds.",
+              "header": "2d/CCLayer.h",
+              "methods": ["create(Color4B)", "changeWidth(float)", "changeHeight(float)"],
+              "properties": ["_blendFunc: BlendFunc", "_displayedColor: Color3B"]
+            },
+            {
+              "name": "LayerGradient",
+              "description": "A Layer that draws a gradient between two colors. Supports direction vector.",
+              "header": "2d/CCLayer.h",
+              "methods": ["create(Color4B start, Color4B end, Vec2 direction)", "setStartColor(Color3B)", "setEndColor(Color3B)"],
+              "properties": ["_startColor: Color3B", "_endColor: Color3B", "_alongVector: Vec2"]
+            }
+          ]
+        },
+        {
+          "name": "DrawNode",
+          "description": "Node that allows drawing primitives (lines, circles, rectangles, polygons, bezier curves). Immediate-mode style drawing API.",
+          "header": "2d/CCDrawNode.h",
+          "methods": [
+            "drawLine(Vec2 from, Vec2 to, Color4F)",
+            "drawRect(Vec2 origin, Vec2 dest, Color4F)",
+            "drawCircle(Vec2 center, float radius, ...)",
+            "drawSolidCircle(Vec2 center, float radius, ...)",
+            "drawPolygon(Vec2* verts, int count, ...)",
+            "drawDot(Vec2, float radius, Color4F)",
+            "drawSegment(Vec2 from, Vec2 to, float radius, Color4F)",
+            "drawCubicBezier(Vec2, Vec2, Vec2, Vec2, ...)",
+            "clear()"
+          ],
+          "properties": ["_bufferCount: int", "_blendFunc: BlendFunc"],
+          "children": []
+        },
+        {
+          "name": "ClippingNode",
+          "description": "A node that clips (masks) its children using a stencil. Children are only visible where the stencil allows. Uses the stencil buffer for rendering.",
+          "header": "2d/CCClippingNode.h",
+          "methods": ["create(Node* stencil)", "setStencil(Node*)", "setInverted(bool)", "setAlphaThreshold(float)"],
+          "properties": ["_stencil: Node*", "_inverted: bool", "_alphaThreshold: float"],
+          "children": []
+        },
+        {
+          "name": "ParticleSystem",
+          "description": "Base particle system node. Emits and simulates particles with configurable properties (speed, gravity, life, color, etc.). Can load from .plist particle files.",
+          "header": "2d/CCParticleSystem.h",
+          "methods": [
+            "create(string plistFile)",
+            "setEmitterMode(Mode)",
+            "setDuration(float)",
+            "setLife(float)",
+            "setEmissionRate(float)",
+            "setStartColor(Color4F)",
+            "setEndColor(Color4F)",
+            "setStartSize(float)",
+            "setEndSize(float)",
+            "setGravity(Vec2)",
+            "setSpeed(float)",
+            "stopSystem()",
+            "resetSystem()"
+          ],
+          "properties": [
+            "_totalParticles: int",
+            "_particleCount: int",
+            "_duration: float",
+            "_life: float",
+            "_emissionRate: float",
+            "_emitterMode: Mode"
+          ],
+          "children": [
+            { "name": "ParticleFireworks", "description": "Preset particle system resembling fireworks.", "header": "2d/CCParticleExamples.h", "methods": ["create()"], "properties": [] },
+            { "name": "ParticleFire", "description": "Preset particle system resembling fire.", "header": "2d/CCParticleExamples.h", "methods": ["create()"], "properties": [] },
+            { "name": "ParticleSmoke", "description": "Preset particle system resembling smoke.", "header": "2d/CCParticleExamples.h", "methods": ["create()"], "properties": [] },
+            { "name": "ParticleSnow", "description": "Preset particle system resembling falling snow.", "header": "2d/CCParticleExamples.h", "methods": ["create()"], "properties": [] },
+            { "name": "ParticleRain", "description": "Preset particle system resembling rain.", "header": "2d/CCParticleExamples.h", "methods": ["create()"], "properties": [] }
+          ]
+        },
+        {
+          "name": "Camera",
+          "description": "Defines the view of the scene. Every scene has a default camera. Custom cameras can be added for multi-viewport rendering. Supports perspective and orthographic projections.",
+          "header": "2d/CCCamera.h",
+          "methods": [
+            "createPerspective(float fov, float aspect, float near, float far)",
+            "createOrthographic(float width, float height, float near, float far)",
+            "lookAt(Vec3 target, Vec3 up)",
+            "setPosition3D(Vec3)",
+            "getProjectionMatrix()",
+            "getViewMatrix()",
+            "setCameraFlag(CameraFlag)"
+          ],
+          "properties": ["_projection: Mat4", "_view: Mat4", "_type: Type", "_cameraFlag: CameraFlag"],
+          "children": []
+        },
+        {
+          "name": "SpriteBatchNode",
+          "description": "Batches draw calls for sprites that use the same texture/atlas. All children must use the same Texture2D. Improves rendering performance for many sprites.",
+          "header": "2d/CCSpriteBatchNode.h",
+          "methods": ["create(string fileImage, int capacity)", "setTexture(Texture2D*)", "getTexture()"],
+          "properties": ["_textureAtlas: TextureAtlas*", "_blendFunc: BlendFunc"],
+          "children": []
+        },
+        {
+          "name": "TMXTiledMap",
+          "description": "Renders a TMX (Tiled Map Editor) map. Supports orthogonal, isometric, and hexagonal maps. Each layer is a SpriteBatchNode child.",
+          "header": "2d/CCTMXTiledMap.h",
+          "methods": [
+            "create(string tmxFile)",
+            "getLayer(string layerName)",
+            "getObjectGroup(string groupName)",
+            "getMapSize()",
+            "getTileSize()",
+            "getProperty(string)"
+          ],
+          "properties": ["_mapSize: Size", "_tileSize: Size", "_mapOrientation: int", "_objectGroups: Vector<TMXObjectGroup*>"],
+          "children": []
+        },
+        {
+          "name": "MotionStreak",
+          "description": "Creates a trailing streak effect behind a moving node. The streak fades over time. Useful for sword slash effects, comet tails, etc.",
+          "header": "2d/CCMotionStreak.h",
+          "methods": ["create(float fade, float minSeg, float stroke, Color3B, string texture)", "setPosition(Vec2)", "reset()"],
+          "properties": ["_fadeDelta: float", "_stroke: float", "_minSeg: float"],
+          "children": []
+        },
+        {
+          "name": "ParallaxNode",
+          "description": "A node that simulates parallax scrolling. Each child is assigned a parallax ratio so children move at different speeds when the node moves.",
+          "header": "2d/CCParallaxNode.h",
+          "methods": ["create()", "addChild(Node*, int z, Vec2 parallaxRatio, Vec2 positionOffset)"],
+          "properties": ["_parallaxArray: _ccArray*"],
+          "children": []
+        },
+        {
+          "name": "RenderTexture",
+          "description": "Renders its children into an off-screen texture (FBO). Useful for screenshots, dynamic textures, post-processing effects.",
+          "header": "2d/CCRenderTexture.h",
+          "methods": [
+            "create(int width, int height, PixelFormat format)",
+            "begin()",
+            "end()",
+            "beginWithClear(float r, float g, float b, float a)",
+            "saveToFile(string filename)",
+            "newImage(bool flipImage)"
+          ],
+          "properties": ["_sprite: Sprite*", "_FBO: GLuint", "_pixelFormat: PixelFormat"],
+          "children": []
+        },
+        {
+          "name": "ui::Widget",
+          "description": "Base class for all UI widgets in the cocos2d-x UI system. Provides touch event handling, focus navigation, layout sizing, and widget state management.",
+          "header": "ui/UIWidget.h",
+          "methods": [
+            "setTouchEnabled(bool)",
+            "setEnabled(bool)",
+            "setBright(bool)",
+            "setFocusEnabled(bool)",
+            "addTouchEventListener(callback)",
+            "setContentSize(Size)",
+            "setSizeType(SizeType)",
+            "setLayoutParameter(LayoutParameter*)",
+            "clone()"
+          ],
+          "properties": [
+            "_touchEnabled: bool",
+            "_bright: bool",
+            "_enabled: bool",
+            "_focused: bool",
+            "_sizeType: SizeType",
+            "_customSize: Size"
+          ],
+          "children": [
+            {
+              "name": "ui::Button",
+              "description": "A push-button widget with normal/pressed/disabled states. Supports text label on the button, scale9 sprite, and zoom effect on press.",
+              "header": "ui/UIButton.h",
+              "methods": [
+                "create(string normal, string selected, string disabled)",
+                "setTitleText(string)",
+                "setTitleFontSize(float)",
+                "setTitleColor(Color3B)",
+                "setPressedActionEnabled(bool)",
+                "setScale9Enabled(bool)"
+              ],
+              "properties": ["_titleRenderer: Label*", "_normalFileName: string", "_scale9Enabled: bool"]
+            },
+            {
+              "name": "ui::Text",
+              "description": "A text display widget (wraps Label internally). Supports TTF and system fonts.",
+              "header": "ui/UIText.h",
+              "methods": ["create(string text, string font, float fontSize)", "setString(string)", "setFontSize(float)", "setTextColor(Color4B)"],
+              "properties": ["_labelRenderer: Label*", "_fontName: string", "_fontSize: float"]
+            },
+            {
+              "name": "ui::ImageView",
+              "description": "Displays a static image. Supports Scale9Sprite for flexible scaling.",
+              "header": "ui/UIImageView.h",
+              "methods": ["create(string filename)", "loadTexture(string)", "setScale9Enabled(bool)", "setCapInsets(Rect)"],
+              "properties": ["_imageRenderer: Scale9Sprite*", "_scale9Enabled: bool"]
+            },
+            {
+              "name": "ui::TextField",
+              "description": "A text input field widget. Wraps a TextFieldTTF internally. Supports placeholder text, max length, password mode.",
+              "header": "ui/UITextField.h",
+              "methods": [
+                "create(string placeholder, string font, int fontSize)",
+                "setString(string)",
+                "setPlaceHolder(string)",
+                "setMaxLength(int)",
+                "setPasswordEnabled(bool)",
+                "addEventListener(callback)"
+              ],
+              "properties": ["_textFieldRenderer: UICCTextField*", "_maxLength: int", "_passwordEnabled: bool"]
+            },
+            {
+              "name": "ui::CheckBox",
+              "description": "A checkbox widget with checked/unchecked states. Has separate textures for background and cross mark.",
+              "header": "ui/UICheckBox.h",
+              "methods": ["create(string bg, string bgSelected, string cross, ...)", "setSelected(bool)", "isSelected()", "addEventListener(callback)"],
+              "properties": ["_isSelected: bool"]
+            },
+            {
+              "name": "ui::Slider",
+              "description": "A slider widget for selecting a value in a range. Has a track bar and a sliding ball.",
+              "header": "ui/UISlider.h",
+              "methods": ["create()", "loadBarTexture(string)", "loadProgressBarTexture(string)", "setPercent(int)", "getPercent()", "addEventListener(callback)"],
+              "properties": ["_percent: int", "_maxPercent: int"]
+            },
+            {
+              "name": "ui::Layout",
+              "description": "Container widget that arranges children using layout algorithms (absolute, linear horizontal/vertical, relative). Supports clipping, background color/image.",
+              "header": "ui/UILayout.h",
+              "methods": [
+                "create()",
+                "setLayoutType(Type)",
+                "setBackGroundColor(Color3B)",
+                "setBackGroundImage(string)",
+                "setClippingEnabled(bool)",
+                "requestDoLayout()"
+              ],
+              "properties": ["_layoutType: Type", "_clippingEnabled: bool", "_backGroundScale9Enabled: bool"],
+              "children": [
+                {
+                  "name": "ui::ScrollView",
+                  "description": "A scrollable container widget. Children can be scrolled vertically, horizontally, or both. Supports bounce effects and scroll bars.",
+                  "header": "ui/UIScrollView.h",
+                  "methods": ["create()", "setDirection(Direction)", "setInnerContainerSize(Size)", "setBounceEnabled(bool)", "scrollToBottom(float, bool)", "addEventListener(callback)"],
+                  "properties": ["_direction: Direction", "_bounceEnabled: bool", "_innerContainer: Layout*"]
+                },
+                {
+                  "name": "ui::ListView",
+                  "description": "A scrollable list widget. Items can be added/removed dynamically. Supports item click events and margin between items.",
+                  "header": "ui/UIListView.h",
+                  "methods": ["create()", "pushBackDefaultItem()", "pushBackCustomItem(Widget*)", "removeItem(int)", "setItemsMargin(float)", "setGravity(Gravity)"],
+                  "properties": ["_items: Vector<Widget*>", "_gravity: Gravity", "_itemsMargin: float"]
+                },
+                {
+                  "name": "ui::PageView",
+                  "description": "A page-based view for swiping through pages. Each page is a Layout.",
+                  "header": "ui/UIPageView.h",
+                  "methods": ["create()", "addPage(Layout*)", "insertPage(Layout*, int)", "removePage(Layout*)", "scrollToPage(int)", "getCurrentPageIndex()"],
+                  "properties": ["_currentPageIndex: int", "_pages: Vector<Layout*>"]
+                }
+              ]
+            },
+            {
+              "name": "ui::LoadingBar",
+              "description": "A progress bar widget. Shows loading or health bar style progress from 0 to 100 percent.",
+              "header": "ui/UILoadingBar.h",
+              "methods": ["create(string texture, float percent)", "setPercent(float)", "getPercent()", "setDirection(Direction)"],
+              "properties": ["_percent: float", "_direction: Direction"]
+            },
+            {
+              "name": "ui::RichText",
+              "description": "Displays rich text with mixed formatting: different fonts, colors, images, links, outlines. Content defined via RichElement objects.",
+              "header": "ui/UIRichText.h",
+              "methods": [
+                "create()",
+                "insertElement(RichElement*, int index)",
+                "pushBackElement(RichElement*)",
+                "removeElement(int)",
+                "formatText()",
+                "setVerticalSpace(float)"
+              ],
+              "properties": ["_richElements: Vector<RichElement*>", "_formatTextDirty: bool"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action",
+      "description": "Base class for all actions. Actions animate nodes over time (move, rotate, scale, fade, etc.). Actions are applied to nodes via node->runAction(action).",
+      "header": "2d/CCAction.h",
+      "methods": ["step(float dt)", "update(float time)", "stop()", "isDone()", "getTarget()", "setTarget(Node*)"],
+      "properties": ["_originalTarget: Node*", "_target: Node*", "_tag: int"],
+      "children": [
+        {
+          "name": "FiniteTimeAction",
+          "description": "Base class for actions that have a finite duration.",
+          "header": "2d/CCAction.h",
+          "methods": ["getDuration()", "setDuration(float)", "reverse()"],
+          "properties": ["_duration: float"],
+          "children": [
+            {
+              "name": "ActionInstant",
+              "description": "Actions that execute instantly (zero duration). Useful in sequences for triggering callbacks, setting properties, etc.",
+              "header": "2d/CCActionInstant.h",
+              "methods": ["update(float)", "reverse()"],
+              "properties": [],
+              "children": [
+                { "name": "Show", "description": "Instantly makes the node visible.", "header": "2d/CCActionInstant.h", "methods": ["create()"], "properties": [] },
+                { "name": "Hide", "description": "Instantly hides the node.", "header": "2d/CCActionInstant.h", "methods": ["create()"], "properties": [] },
+                { "name": "CallFunc", "description": "Calls a std::function<void()> callback instantly.", "header": "2d/CCActionInstant.h", "methods": ["create(function<void()>)"], "properties": ["_function: function<void()>"] },
+                { "name": "RemoveSelf", "description": "Removes the node from its parent instantly.", "header": "2d/CCActionInstant.h", "methods": ["create(bool isNeedCleanUp)"], "properties": [] },
+                { "name": "Place", "description": "Instantly places the node at a given position.", "header": "2d/CCActionInstant.h", "methods": ["create(Vec2 pos)"], "properties": ["_position: Vec2"] },
+                { "name": "FlipX", "description": "Instantly flips the sprite horizontally.", "header": "2d/CCActionInstant.h", "methods": ["create(bool x)"], "properties": ["_flipX: bool"] },
+                { "name": "FlipY", "description": "Instantly flips the sprite vertically.", "header": "2d/CCActionInstant.h", "methods": ["create(bool y)"], "properties": ["_flipY: bool"] }
+              ]
+            },
+            {
+              "name": "ActionInterval",
+              "description": "Base class for actions that take a specific duration to complete. Most animation actions inherit from this.",
+              "header": "2d/CCActionInterval.h",
+              "methods": ["isDone()", "step(float dt)", "startWithTarget(Node*)", "reverse()", "clone()"],
+              "properties": ["_elapsed: float", "_firstTick: bool", "_done: bool"],
+              "children": [
+                { "name": "MoveTo", "description": "Moves the node to an absolute position over time.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, Vec2 position)"], "properties": ["_positionDelta: Vec2", "_endPosition: Vec2"] },
+                { "name": "MoveBy", "description": "Moves the node by a relative delta over time.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, Vec2 delta)"], "properties": ["_positionDelta: Vec2"] },
+                { "name": "RotateTo", "description": "Rotates the node to an absolute angle over time.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, float angle)"], "properties": ["_dstAngle: float"] },
+                { "name": "RotateBy", "description": "Rotates the node by a relative angle over time.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, float deltaAngle)"], "properties": ["_angleZ: float"] },
+                { "name": "ScaleTo", "description": "Scales the node to an absolute scale factor over time.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, float s)", "create(float duration, float sx, float sy)"], "properties": ["_endScaleX: float", "_endScaleY: float"] },
+                { "name": "ScaleBy", "description": "Scales the node by a relative factor over time.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, float s)"], "properties": [] },
+                { "name": "FadeIn", "description": "Fades in the node from transparent to fully opaque.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration)"], "properties": [] },
+                { "name": "FadeOut", "description": "Fades out the node from opaque to fully transparent.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration)"], "properties": [] },
+                { "name": "FadeTo", "description": "Fades the node to a given opacity over time.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, GLubyte opacity)"], "properties": ["_toOpacity: GLubyte"] },
+                { "name": "TintTo", "description": "Tints the node to a target color over time.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, GLubyte r, GLubyte g, GLubyte b)"], "properties": ["_to: Color3B"] },
+                { "name": "DelayTime", "description": "Pauses for a given duration. Useful inside a Sequence.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration)"], "properties": [] },
+                { "name": "BezierTo", "description": "Moves the node along a cubic Bezier curve to an endpoint.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, ccBezierConfig)"], "properties": ["_config: ccBezierConfig"] },
+                { "name": "BezierBy", "description": "Moves the node along a cubic Bezier curve by relative offsets.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, ccBezierConfig)"], "properties": ["_config: ccBezierConfig"] },
+                { "name": "JumpTo", "description": "Moves the node to a position with parabolic jumps.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, Vec2 pos, float height, int jumps)"], "properties": ["_height: float", "_jumps: int"] },
+                { "name": "JumpBy", "description": "Moves the node by a delta with parabolic jumps.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, Vec2 delta, float height, int jumps)"], "properties": ["_height: float", "_jumps: int"] },
+                { "name": "Blink", "description": "Makes the node blink (toggle visibility) a given number of times.", "header": "2d/CCActionInterval.h", "methods": ["create(float duration, int blinks)"], "properties": ["_times: int"] },
+                {
+                  "name": "Sequence",
+                  "description": "Runs a list of actions one after another in sequence.",
+                  "header": "2d/CCActionInterval.h",
+                  "methods": ["create(FiniteTimeAction*, ...)", "createWithTwoActions(FiniteTimeAction*, FiniteTimeAction*)"],
+                  "properties": ["_actions[2]: FiniteTimeAction*", "_split: float"]
+                },
+                {
+                  "name": "Spawn",
+                  "description": "Runs a list of actions simultaneously (in parallel).",
+                  "header": "2d/CCActionInterval.h",
+                  "methods": ["create(FiniteTimeAction*, ...)", "createWithTwoActions(FiniteTimeAction*, FiniteTimeAction*)"],
+                  "properties": ["_one: FiniteTimeAction*", "_two: FiniteTimeAction*"]
+                },
+                {
+                  "name": "Repeat",
+                  "description": "Repeats an action a given number of times.",
+                  "header": "2d/CCActionInterval.h",
+                  "methods": ["create(FiniteTimeAction*, unsigned int times)"],
+                  "properties": ["_times: unsigned int", "_total: unsigned int", "_innerAction: FiniteTimeAction*"]
+                },
+                {
+                  "name": "RepeatForever",
+                  "description": "Repeats an action indefinitely until manually stopped.",
+                  "header": "2d/CCActionInterval.h",
+                  "methods": ["create(ActionInterval*)"],
+                  "properties": ["_innerAction: ActionInterval*"]
+                },
+                {
+                  "name": "Animate",
+                  "description": "Animates a sprite through a series of SpriteFrames (frame-by-frame animation).",
+                  "header": "2d/CCActionInterval.h",
+                  "methods": ["create(Animation*)", "getAnimation()", "setAnimation(Animation*)"],
+                  "properties": ["_animation: Animation*", "_frameIndex: int"]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Follow",
+          "description": "Makes the camera/layer follow a target node. Optionally clamps to a bounding rectangle.",
+          "header": "2d/CCAction.h",
+          "methods": ["create(Node* followedNode, Rect rect)", "setBoundarySet(bool)"],
+          "properties": ["_followedNode: Node*", "_halfScreenSize: Vec2", "_boundarySet: bool"]
+        },
+        {
+          "name": "Speed",
+          "description": "Wraps an ActionInterval and changes its speed. Speed > 1 means faster, < 1 means slower.",
+          "header": "2d/CCAction.h",
+          "methods": ["create(ActionInterval*, float speed)", "setSpeed(float)", "getSpeed()"],
+          "properties": ["_speed: float", "_innerAction: ActionInterval*"]
+        }
+      ]
+    },
+    {
+      "name": "Component",
+      "description": "Base class for components that can be attached to nodes. Follows an Entity-Component pattern to add behaviors without subclassing.",
+      "header": "2d/CCComponent.h",
+      "methods": ["create()", "setEnabled(bool)", "isEnabled()", "update(float dt)", "setOwner(Node*)", "getOwner()"],
+      "properties": ["_owner: Node*", "_name: string", "_enabled: bool"],
+      "children": [
+        {
+          "name": "PhysicsBody",
+          "description": "A physics body component (Box2D or Chipmunk backend). Attach to a Node to give it physics simulation.",
+          "header": "physics/CCPhysicsBody.h",
+          "methods": [
+            "createDynamic()",
+            "createStatic()",
+            "createCircle(float radius)",
+            "createBox(Size size)",
+            "createEdgeBox(Size size)",
+            "setVelocity(Vec2)",
+            "applyForce(Vec2)",
+            "applyImpulse(Vec2)",
+            "setMass(float)",
+            "setDynamic(bool)",
+            "setCategoryBitmask(int)",
+            "setContactTestBitmask(int)",
+            "setCollisionBitmask(int)"
+          ],
+          "properties": ["_mass: float", "_dynamic: bool", "_velocity: Vec2", "_shapes: Vector<PhysicsShape*>"]
+        }
+      ]
+    },
+    {
+      "name": "Director",
+      "description": "Singleton that manages the game loop, scene stack, and OpenGL view. Controls the flow of scenes and the main game timing.",
+      "header": "base/CCDirector.h",
+      "methods": [
+        "getInstance()",
+        "runWithScene(Scene*)",
+        "pushScene(Scene*)",
+        "popScene()",
+        "replaceScene(Scene*)",
+        "getRunningScene()",
+        "pause()",
+        "resume()",
+        "end()",
+        "getWinSize()",
+        "getVisibleSize()",
+        "getVisibleOrigin()",
+        "setAnimationInterval(float)",
+        "getScheduler()",
+        "getActionManager()",
+        "getEventDispatcher()",
+        "getTextureCache()"
+      ],
+      "properties": [
+        "_runningScene: Scene*",
+        "_scenesStack: vector<Scene*>",
+        "_deltaTime: float",
+        "_winSizeInPoints: Size",
+        "_scheduler: Scheduler*",
+        "_actionManager: ActionManager*"
+      ],
+      "children": []
+    },
+    {
+      "name": "EventDispatcher",
+      "description": "Central event system. Dispatches events to registered listeners. Handles touch, keyboard, mouse, custom events, and physics contact events.",
+      "header": "base/CCEventDispatcher.h",
+      "methods": [
+        "addEventListenerWithSceneGraphPriority(EventListener*, Node*)",
+        "addEventListenerWithFixedPriority(EventListener*, int)",
+        "removeEventListener(EventListener*)",
+        "removeAllEventListeners()",
+        "dispatchEvent(Event*)",
+        "setEnabled(bool)"
+      ],
+      "properties": ["_listeners: map<EventListener::ListenerID, EventListenerVector*>", "_isEnabled: bool"],
+      "children": []
+    },
+    {
+      "name": "Scheduler",
+      "description": "Responsible for triggering scheduled callbacks. Updates are called every frame. Timers with intervals are also supported. Works closely with Director.",
+      "header": "base/CCScheduler.h",
+      "methods": [
+        "schedule(callback, target, interval, repeat, delay, key)",
+        "unschedule(key, target)",
+        "unscheduleAll()",
+        "scheduleUpdate(target, priority, paused)",
+        "setTimeScale(float)",
+        "getTimeScale()"
+      ],
+      "properties": ["_timeScale: float", "_updatesNegList: list", "_updates0List: list", "_updatesPosList: list"],
+      "children": []
+    },
+    {
+      "name": "EventListener",
+      "description": "Base class for event listeners. Each listener type handles specific events (touch, keyboard, mouse, acceleration, custom).",
+      "header": "base/CCEventListener.h",
+      "methods": ["create()", "setEnabled(bool)", "isEnabled()", "clone()", "checkAvailable()"],
+      "properties": ["_onEvent: function", "_type: Type", "_isRegistered: bool", "_paused: bool"],
+      "children": [
+        { "name": "EventListenerTouchOneByOne", "description": "Handles single touch events (began, moved, ended, cancelled). swallowTouches prevents propagation.", "header": "base/CCEventListenerTouch.h", "methods": ["create()", "setSwallowTouches(bool)"], "properties": ["onTouchBegan", "onTouchMoved", "onTouchEnded", "onTouchCancelled", "_needSwallow: bool"] },
+        { "name": "EventListenerTouchAllAtOnce", "description": "Handles multi-touch events (all touches delivered at once).", "header": "base/CCEventListenerTouch.h", "methods": ["create()"], "properties": ["onTouchesBegan", "onTouchesMoved", "onTouchesEnded"] },
+        { "name": "EventListenerKeyboard", "description": "Handles keyboard key press and release events.", "header": "base/CCEventListenerKeyboard.h", "methods": ["create()"], "properties": ["onKeyPressed", "onKeyReleased"] },
+        { "name": "EventListenerMouse", "description": "Handles mouse events (down, up, move, scroll).", "header": "base/CCEventListenerMouse.h", "methods": ["create()"], "properties": ["onMouseDown", "onMouseUp", "onMouseMove", "onMouseScroll"] },
+        { "name": "EventListenerCustom", "description": "Listens for custom named events dispatched by the user.", "header": "base/CCEventListenerCustom.h", "methods": ["create(string eventName, callback)"], "properties": ["_onCustomEvent: function"] },
+        { "name": "EventListenerPhysicsContact", "description": "Handles physics contact events (begin, pre-solve, post-solve, separate).", "header": "physics/CCEventListenerPhysicsContact.h", "methods": ["create()"], "properties": ["onContactBegin", "onContactPreSolve", "onContactPostSolve", "onContactSeparate"] }
+      ]
+    },
+    {
+      "name": "TextureCache",
+      "description": "Caches loaded textures so they are not loaded multiple times. Shared by the Director.",
+      "header": "renderer/CCTextureCache.h",
+      "methods": [
+        "addImage(string filepath)",
+        "addImageAsync(string filepath, callback)",
+        "getTextureForKey(string key)",
+        "removeTexture(Texture2D*)",
+        "removeAllTextures()",
+        "removeUnusedTextures()"
+      ],
+      "properties": ["_textures: map<string, Texture2D*>"],
+      "children": []
+    },
+    {
+      "name": "SpriteFrameCache",
+      "description": "Caches SpriteFrame objects loaded from sprite sheet plist files. Used with TextureAtlas/SpriteBatchNode for efficient rendering.",
+      "header": "2d/CCSpriteFrameCache.h",
+      "methods": [
+        "getInstance()",
+        "addSpriteFramesWithFile(string plist)",
+        "getSpriteFrameByName(string name)",
+        "removeSpriteFrames()",
+        "removeUnusedSpriteFrames()"
+      ],
+      "properties": ["_spriteFrames: map<string, SpriteFrame*>"],
+      "children": []
+    },
+    {
+      "name": "FileUtils",
+      "description": "Singleton for file system access. Provides search paths, reading files, checking existence. Platform-abstracted.",
+      "header": "platform/CCFileUtils.h",
+      "methods": [
+        "getInstance()",
+        "fullPathForFilename(string)",
+        "addSearchPath(string)",
+        "getDataFromFile(string)",
+        "getStringFromFile(string)",
+        "isFileExist(string)",
+        "isDirectoryExist(string)",
+        "getWritablePath()"
+      ],
+      "properties": ["_searchPathArray: vector<string>", "_defaultResRootPath: string"],
+      "children": []
+    },
+    {
+      "name": "AudioEngine",
+      "description": "Cross-platform audio engine for playing music and sound effects. Replaced the older SimpleAudioEngine.",
+      "header": "audio/AudioEngine.h",
+      "methods": [
+        "play2d(string filepath, bool loop, float volume)",
+        "stop(int audioID)",
+        "stopAll()",
+        "pause(int audioID)",
+        "resume(int audioID)",
+        "setVolume(int audioID, float volume)",
+        "setLoop(int audioID, bool loop)",
+        "setFinishCallback(int audioID, callback)",
+        "preload(string filepath)"
+      ],
+      "properties": [],
+      "children": []
+    }
+  ]
+}
